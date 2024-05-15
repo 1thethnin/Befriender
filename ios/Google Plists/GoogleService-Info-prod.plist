@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CLIENT_ID</key>
+	<string>970894804595-f8asrne8lh4smf1qlca1tb558rk6ulao.apps.googleusercontent.com</string>
+	<key>REVERSED_CLIENT_ID</key>
+	<string>com.googleusercontent.apps.970894804595-f8asrne8lh4smf1qlca1tb558rk6ulao</string>
+	<key>API_KEY</key>
+	<string>AIzaSyDgrT57yhfK2K5gyMnBOenFSrjOd20dNOQ</string>
+	<key>GCM_SENDER_ID</key>
+	<string>970894804595</string>
+	<key>PLIST_VERSION</key>
+	<string>1</string>
+	<key>BUNDLE_ID</key>
+	<string>sg.org.lionbefrienders.imok.befriender</string>
+	<key>PROJECT_ID</key>
+	<string>lions-imok</string>
+	<key>STORAGE_BUCKET</key>
+	<string>lions-imok.appspot.com</string>
+	<key>IS_ADS_ENABLED</key>
+	<false></false>
+	<key>IS_ANALYTICS_ENABLED</key>
+	<false></false>
+	<key>IS_APPINVITE_ENABLED</key>
+	<true></true>
+	<key>IS_GCM_ENABLED</key>
+	<true></true>
+	<key>IS_SIGNIN_ENABLED</key>
+	<true></true>
+	<key>GOOGLE_APP_ID</key>
+	<string>1:970894804595:ios:984d9c42dfa093725a0c06</string>
+	<key>DATABASE_URL</key>
+	<string>https://lions-imok-default-rtdb.asia-southeast1.firebasedatabase.app</string>
+</dict>
+</plist>

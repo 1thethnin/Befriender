@@ -1,0 +1,113 @@
+# This file contains the fastlane.tools configuration
+# You can find the documentation at https://docs.fastlane.tools
+#
+# For a list of all available actions, check out
+#
+#     https://docs.fastlane.tools/actions
+#
+# For a list of all available plugins, check out
+#
+#     https://docs.fastlane.tools/plugins/available-plugins
+#
+
+# Uncomment the line if you want fastlane to automatically update itself
+# update_fastlane
+
+default_platform(:ios)
+
+def execute_for_all_envs
+  # 1 grab all .env files
+  schemeList = Dir.glob(".env*", base:"../")
+  # 2 loop all files
+  schemeList.each do |file|
+    # 3 set env
+    Dotenv.overload("../#{file}")
+    # 4 call callback lane
+    yield
+  end
+end
+
+platform :ios do
+  desc "Build #{ENV["FASTLANE_SCHEME"]} IPA"
+  lane :build do
+    puts "About to build #{ENV["FASTLANE_SCHEME"]}'s ipa."
+    cocoapods(use_bundle_exec: false, podfile: "./ios/Podfile")
+    gym(
+      scheme: ENV["FASTLANE_SCHEME"], 
+      clean: true, 
+      workspace: './ios/lionshomecareAdmin.xcworkspace', 
+      export_method: 'enterprise', 
+      export_options: {
+        method: "enterprise",
+        provisioningProfiles: {
+                "#{ENV["FASTLANE_APP_ID"]}": ENV["FASTLANE_PROFILE_NAME"]
+            }
+      },
+      output_directory: ENV["FASTLANE_OUTPUT_DIR"]
+    )
+  end
+  desc "Build and upload #{ENV["VERSION_CODE"]} IPA to App Center"
+  lane :publish do |options|
+    scheme = options[:env]
+    if scheme != nil
+      Dotenv.overload("../.env.#{scheme}")
+    end
+    build # call build lane
+    puts "About to upload #{ENV["FASTLANE_IPA_PATH"]} to Appcenter."
+    appcenter_upload(
+      api_token: ENV["FASTLANE_APPCENTER_IOS_API_TOKEN"],
+      owner_name: ENV["FASTLANE_APPCENTER_OWNER_NAME"],
+      owner_type: ENV["FASTLANE_APPCENTER_OWNER_TYPE"],
+      app_name: ENV["FASTLANE_APPCENTER_APP_NAME_IOS"],
+      destinations: ENV["FASTLANE_APPCENTER_DESTINATION"],
+      destination_type: ENV["FASTLANE_APPCENTER_DESTINATION_TYPE"],
+      file: ENV["FASTLANE_IPA_PATH"]
+    )
+  end
+  desc "Build and upload ipas for all environments"
+  lane :release_all do
+      execute_for_all_envs{ publish }
+  end
+end
+
+platform :android do
+  desc "Build #{ENV["FASTLANE_FLAVOR"]} apk"
+  lane :build do
+    puts "flavor is #{ENV["FASTLANE_FLAVOR"]}"
+    gradle(task: 'clean', project_dir: 'android/')
+    gradle(
+       task: 'assemble',
+       build_type: 'Release',
+       project_dir: 'android/',
+       flavor: "#{ENV["FASTLANE_FLAVOR"]}".capitalize
+    )
+    copy_artifacts(
+      artifacts: [lane_context[SharedValues::GRADLE_APK_OUTPUT_PATH]],
+      target_path: ENV["FASTLANE_OUTPUT_DIR"]
+    )
+  end
+  desc 'Build and upload to App Center.'
+  lane :publish do |options|
+    flavor = options[:env]
+    if flavor != nil
+      Dotenv.overload("../.env.#{flavor}")
+    end
+    build # call android build lane
+    apkPath = "#{ENV["FASTLANE_OUTPUT_DIR"]}/#{"#{ENV["FASTLANE_FLAVOR"]}".capitalize}-Befriender-v#{ENV["VERSION_CODE"]}.apk"
+    puts "About to upload #{apkPath} to Appcenter."
+    appcenter_upload(
+      api_token: ENV["FASTLANE_APPCENTER_ANDROID_API_TOKEN"],
+      owner_name: ENV["FASTLANE_APPCENTER_OWNER_NAME"],
+      owner_type: ENV["FASTLANE_APPCENTER_OWNER_TYPE"],
+      app_name: ENV["FASTLANE_APPCENTER_APP_NAME_ANDROID"],
+      destinations: ENV["FASTLANE_APPCENTER_DESTINATION"],
+      destination_type: ENV["FASTLANE_APPCENTER_DESTINATION_TYPE"],
+      file: apkPath
+    )
+  end
+  desc "Build and upload ipas for all environments"
+  lane :release_all do
+      execute_for_all_envs{ publish }
+  end
+end
+
